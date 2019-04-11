@@ -39,7 +39,7 @@ class Chopper:
     RESPONSE_DICT = {'%': 'Success', '!': 'Invalid command',
                      '#': 'Axis at fault', '$': 'Command timed out'}
 
-    # constructor opens socket to controller and enables motion 
+    # open socket to controller and enable motion
     def __init__(self):
         try:
             self.__client_socket.connect((self.__controller_ip,
@@ -56,7 +56,7 @@ class Chopper:
             print("Error occurred: ", sys.exc_info()[0])
             print("Ensure controller is mapped and configured")
 
-    # chops between on and off axis positions
+    # chop between on and off axis positions
     def chop(self, on_axis='1', off_axis='0', speed='80', dwell_time=0.2):
         # WARNING - no command checking done to minimize latency
         # Use on-axis() and off-axis() to check if errors occur
@@ -72,27 +72,28 @@ class Chopper:
                 self.__client_socket.recv(self.DATA_BUFFER)
                 time.sleep(dwell_time)
             except KeyboardInterrupt:
+                self.stop()
                 break  # user interrupt (Ctrl-C) without closing socket
 
-    # moves to on axis position
-    def on_axis(self, on_axis='1', speed='80'):
-        self.__client_socket.sendall(("MOVEABS A " + on_axis + " F "
+    # move to on axis position
+    def on_axis(self, pos='1', speed='80'):
+        self.__client_socket.sendall(("MOVEABS A " + pos + " F "
                                       + speed + "\n").encode())
         response = self.RESPONSE_DICT.get(self.__client_socket.recv(
             self.DATA_BUFFER).decode()[0])
         if response != 'Success':
             print(response)
 
-    # moves to off axis position
-    def off_axis(self, off_axis='0', speed='80'):
-        self.__client_socket.sendall(("MOVEABS A " + off_axis + " F "
+    # move to off axis position
+    def off_axis(self, pos='0', speed='80'):
+        self.__client_socket.sendall(("MOVEABS A " + pos + " F "
                                       + speed + "\n").encode())
         response = self.RESPONSE_DICT.get(self.__client_socket.recv(
             self.DATA_BUFFER).decode()[0])
         if response != 'Success':
             print(response)
 
-    # aborts motion
+    # abort motion
     def stop(self):
         self.__client_socket.sendall("ABORT A\n".encode())
         response = self.RESPONSE_DICT.get(self.__client_socket.recv(
