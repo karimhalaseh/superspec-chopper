@@ -1,0 +1,20 @@
+import time
+from EnsembleSocketConnection import Chopper
+
+chopper = Chopper()
+
+start = time.time()
+while time.time() - start < 8:
+    chopper.chop()
+time.sleep(5)
+chopper.on_axis()
+time.sleep(5)
+chopper.off_axis()
+time.sleep(5)
+chopper.terminate()
+
+
+
+
+
+

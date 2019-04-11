@@ -41,7 +41,6 @@ class Chopper:
 
     # constructor opens socket to controller and enables motion 
     def __init__(self):
-        
         try:
             self.__client_socket.connect((self.__controller_ip,
                                          self.__controller_port))
@@ -53,7 +52,6 @@ class Chopper:
                 print("Connection successful\nMotion Enabled")
             else:
                 print(response)
-            
         except:
             print("Error occurred: ", sys.exc_info()[0])
             print("Ensure controller is mapped and configured")
@@ -62,17 +60,19 @@ class Chopper:
     def chop(self, on_axis='1', off_axis='0', speed='80', dwell_time=0.2):
         # WARNING - no command checking done to minimize latency
         # Use on-axis() and off-axis() to check if errors occur
-        # TODO: implement loop breaking if required?
-        # while True:
-        self.__client_socket.sendall(("MOVEABS A " + on_axis + " F "
-                                      + speed + "\n").encode())
-        self.__client_socket.recv(self.DATA_BUFFER)
-        time.sleep(dwell_time)
+        while True:
+            try:
+                self.__client_socket.sendall(("MOVEABS A " + on_axis + " F "
+                                              + speed + "\n").encode())
+                self.__client_socket.recv(self.DATA_BUFFER)
+                time.sleep(dwell_time)
 
-        self.__client_socket.sendall(("MOVEABS A " + off_axis + " F "
-                                      + speed + "\n").encode())
-        self.__client_socket.recv(self.DATA_BUFFER)
-        time.sleep(dwell_time)
+                self.__client_socket.sendall(("MOVEABS A " + off_axis + " F "
+                                              + speed + "\n").encode())
+                self.__client_socket.recv(self.DATA_BUFFER)
+                time.sleep(dwell_time)
+            except KeyboardInterrupt:
+                break  # user interrupt (Ctrl-C) without closing socket
 
     # moves to on axis position
     def on_axis(self, on_axis='1', speed='80'):
@@ -84,7 +84,7 @@ class Chopper:
             print(response)
 
     # moves to off axis position
-    def off_axis(self, off_axis='1', speed='80'):
+    def off_axis(self, off_axis='0', speed='80'):
         self.__client_socket.sendall(("MOVEABS A " + off_axis + " F "
                                       + speed + "\n").encode())
         response = self.RESPONSE_DICT.get(self.__client_socket.recv(
